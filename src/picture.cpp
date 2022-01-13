@@ -722,6 +722,15 @@ void set_zoom(unsigned int amount)
 	}
 }
 
+//If thescaling factor is a non-integer multiple of the original image resolution it looks crappy without filtering
+surface scale_surface_nice(const surface & surf, int size_x, int size_y){
+  if (((size_x % tile_size) == 0) && ((size_x % tile_size) == 0))
+		return scale_surface_nn(img, size_x, size_y);
+  else
+    return scale_surface(img, size_x, size_y);
+}
+
+
 static surface get_hexed(const locator& i_locator)
 {
 	surface image(get_image(i_locator, UNSCALED));
@@ -738,7 +747,7 @@ static surface get_scaled_to_hex(const locator& i_locator)
 	// return scale_surface(img, zoom, zoom);
 
 	if(img) {
-		return scale_surface_nn(img, zoom, zoom);
+		return scale_surface_nice(img, zoom, zoom);
 	}
 
 	return surface(nullptr);
@@ -759,7 +768,7 @@ static surface get_scaled_to_zoom(const locator& i_locator)
 	surface res(get_image(i_locator, UNSCALED));
 	// For some reason haloes seems to have invalid images, protect against crashing
 	if(res) {
-		return scale_surface_nn(res, ((res->w * zoom) / tile_size), ((res->h * zoom) / tile_size));
+		return scale_surface_nice(res, ((res->w * zoom) / tile_size), ((res->h * zoom) / tile_size));
 	}
 
 	return surface(nullptr);
@@ -926,7 +935,7 @@ surface get_lighted_image(const image::locator& i_locator, const light_string& l
 	case SCALED_TO_HEX:
 		// we light before scaling to reuse the unscaled cache
 		res = get_lighted_image(i_locator, ls, HEXED);
-		res = scale_surface_nn(res, zoom, zoom);
+		res = scale_surface_nice(res, zoom, zoom);
 		break;
 	default:
 		break;
